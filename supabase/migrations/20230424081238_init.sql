@@ -44,3 +44,23 @@ create table if not exists "public"."specs" (
 create unique index if not exists "specs_domain_id_name_version_key" on "public"."specs" ("name", "version");
 alter table "public"."specs" add constraint "specs_domain_id_fkey" foreign key ("domain_id") references "public"."domains" ("id") on delete set null;
 alter table "public"."specs" add constraint "specs_owner_id_fkey" foreign key ("owner_id") references "auth"."users" ("id") on delete set null;
+
+alter table "public"."specs" enable row level security;
+create policy "specs_domain_id_select_policy" on "public"."specs" for select 
+  using (
+    auth.uid() in (
+      select "user_id" from "public"."user_domains" as ud 
+      where ud."domain_id" = "specs"."domain_id"
+      )
+  );
+create policy "specs_domain_id_insert_policy" on "public"."specs" for insert
+  with check (auth.uid() = "owner_id" and auth.uid() in (
+    select ud."user_id" from "public"."user_domains" as ud 
+    where ud."domain_id" = "specs"."domain_id"
+    )
+  );
+create policy "specs_domain_id_update_policy" on "public"."specs" for update
+  using (auth.uid() = "owner_id")
+  with check (auth.uid() = "owner_id");
+create policy "specs_domain_id_delete_policy" on "public"."specs" for delete
+  using (auth.uid() = "owner_id");
