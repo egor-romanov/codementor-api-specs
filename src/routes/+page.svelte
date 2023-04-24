@@ -1,4 +1,22 @@
-<h1>Welcome to SvelteKit</h1>
-<p>
-  Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation
-</p>
+<script lang="ts">
+  import { Auth } from '@supabase/auth-ui-svelte'
+  import { ThemeSupa } from '@supabase/auth-ui-shared'
+  import type { PageData } from './$types'
+
+  export let data: PageData
+</script>
+
+<div class="flex">
+  <h1>Welcome to API-Specs</h1>
+  <div class="row flex-center flex">
+    <div class="col-9 form-widget">
+      <Auth
+        supabaseClient={data.supabase}
+        view="magic_link"
+        redirectTo={`${data.url}/logging-in?redirect=/`}
+        showLinks={false}
+        appearance={{ theme: ThemeSupa, style: { input: 'color: #fff' } }}
+      />
+    </div>
+  </div>
+</div>
