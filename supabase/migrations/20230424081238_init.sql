@@ -27,3 +27,20 @@ alter table "public"."user_domains" add constraint "user_domains_domain_id_fkey"
 alter table "public"."user_domains" enable row level security;
 create policy "user_domains_user_id_policy" on "public"."user_domains" for select using (auth.uid() = "user_id");
 
+-- specs table is used to store the specs of the APIs
+create table if not exists "public"."specs" (
+  "id" uuid not null default uuid_generate_v4(),
+  "name" text not null,
+  "description" text null,
+  "version" int not null,
+  "schema_url" text not null,
+  "domain_id" uuid not null,
+  "owner_id" uuid not null,
+  "created_at" timestamptz not null default now(),
+  "updated_at" timestamptz not null default now(),
+  "deleted_at" timestamptz null,
+  primary key ("id")
+);
+create unique index if not exists "specs_domain_id_name_version_key" on "public"."specs" ("name", "version");
+alter table "public"."specs" add constraint "specs_domain_id_fkey" foreign key ("domain_id") references "public"."domains" ("id") on delete set null;
+alter table "public"."specs" add constraint "specs_owner_id_fkey" foreign key ("owner_id") references "auth"."users" ("id") on delete set null;
